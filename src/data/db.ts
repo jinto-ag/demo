@@ -1,9 +1,16 @@
 import Dexie, { Table } from "dexie";
-import { BodyType, Car, CarMake, EngineCapacity, TransmissionModel } from "./type";
+import {
+  BodyType,
+  Car,
+  CarMake,
+  EngineCapacity,
+  TransmissionModel,
+} from "./type";
 import {
   transmissionModelsSeed,
   engineCapacitiesSeed,
   bodyTypesSeed,
+  cars,
 } from "./seed";
 
 export class DataRepository extends Dexie {
@@ -27,6 +34,7 @@ export class DataRepository extends Dexie {
       db.transmissionModels.bulkAdd(transmissionModelsSeed);
       db.engineCapacities.bulkAdd(engineCapacitiesSeed);
       db.bodyTypes.bulkAdd(bodyTypesSeed);
+      db.cars.bulkAdd(cars);
     });
   }
 }
