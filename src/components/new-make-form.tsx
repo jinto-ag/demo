@@ -5,36 +5,48 @@ import {
   IconExclamationCircle,
   IconLoader2,
 } from "@tabler/icons-react";
-import React, { useState } from "react";
-import { z } from "zod";
+import React, { useEffect, useState } from "react";
+import { db } from "../data/db";
+import { CarMakeSchema } from "../data/schema";
 import { Field, ImageField } from "./form";
 import Button from "./ui/button";
+import { CarMake } from "../data/type";
 
 interface NewMakeFormProps {
-  onSubmit: (formData: FormData) => Promise<void>;
+  onSubmit?: (formData: FormData) => Promise<void>;
 }
 
 type Status = "idle" | "submitting" | "loading" | "error" | "success";
 
-const FormSchema = z.object({
-  makeName: z.string().min(3, "Make name must contain at least 3 character(s"),
-  makeImage: z.instanceof(File, { message: "Select a valid image" }),
-});
-
 const NewMakeForm: React.FC<NewMakeFormProps> = ({ onSubmit }) => {
   const [status, setStatus] = useState<Status>("idle");
 
+  useEffect(() => {
+    const fetchCarMakes = async () => {
+      const bodyTypes = await db.bodyTypes.toArray();
+      console.log({ bodyTypes });
+    };
+
+    fetchCarMakes();
+  }, []);
+
   const [form, fields] = useForm({
     id: "idMakeAddForm",
-    constraint: getZodConstraint(FormSchema),
+    constraint: getZodConstraint(CarMakeSchema),
     shouldValidate: "onInput",
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: FormSchema });
+      return parseWithZod(formData, { schema: CarMakeSchema });
     },
     onSubmit(e, { formData }) {
       e.preventDefault();
       setStatus("submitting");
-      onSubmit(formData).then(() => {
+      const carMake = Object.fromEntries(
+        formData.entries()
+      ) as unknown as CarMake;
+
+      console.log({ carMake });
+
+      db.carMakes.add(carMake).then(() => {
         setStatus("success");
         form.reset();
         setStatus("idle");
@@ -57,27 +69,25 @@ const NewMakeForm: React.FC<NewMakeFormProps> = ({ onSubmit }) => {
           <ImageField
             labelProps={{ children: "Make Logo" }}
             inputProps={{
-              ...getInputProps(fields.makeImage, {
+              ...getInputProps(fields.logo, {
                 type: "file",
               }),
             }}
-            errors={fields.makeImage.errors}
+            errors={fields.logo.errors}
           />
           <Field
             labelProps={{ children: "Name of the make" }}
             inputProps={{
-              ...getInputProps(fields.makeName, {
+              ...getInputProps(fields.name, {
                 type: "text",
               }),
               placeholder: "Enter make name",
             }}
-            errors={fields.makeName.errors}
+            errors={fields.name.errors}
           />
           <Button
             type="submit"
-            disabled={
-              fields.makeImage.errors || fields.makeName.errors ? true : false
-            }
+            disabled={fields.logo.errors || fields.name.errors ? true : false}
           >
             {status !== "idle" && (
               <IconLoader2 className="animate-spin ease-linear" />
