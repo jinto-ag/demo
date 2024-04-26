@@ -1,37 +1,22 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
-import {
-  IconCircleCheck,
-  IconExclamationCircle,
-  IconLoader2,
-} from "@tabler/icons-react";
-import React, { useState } from "react";
+import React from "react";
 import { Form, useActionData } from "react-router-dom";
 import { CarMakeSchema } from "../data/schema";
-import { action as carMakesCreateAction } from "../routes/car-makes/create";
+import { CarMake } from "../data/type";
+import { action as carMakesEditAction } from "../routes/car-makes/edit";
 import { Field, ImageField } from "./form";
 import Button from "./ui/button";
-import { CarMake } from "../data/type";
 
-interface NewMakeFormProps {
+interface CarMakeEditFormProps {
   initialValue?: CarMake;
-  action: "edit" | "create";
-  onSubmit?: (formData: FormData) => Promise<void>;
 }
 
-type Status = "idle" | "submitting" | "loading" | "error" | "success";
-
-const NewMakeForm: React.FC<NewMakeFormProps> = ({
-  onSubmit,
-  action,
-  initialValue,
-}) => {
-  const actionData = useActionData() as typeof carMakesCreateAction;
-
-  const [status, setStatus] = useState<Status>("idle");
+const CarMakeEditForm: React.FC<CarMakeEditFormProps> = ({ initialValue }) => {
+  const actionData = useActionData() as typeof carMakesEditAction;
 
   const [form, fields] = useForm({
-    id: "idcarMakeCreateForm",
+    id: "idcarMakeEditForm",
     constraint: getZodConstraint(CarMakeSchema),
     shouldValidate: "onInput",
     lastResult: actionData?.result,
@@ -44,8 +29,7 @@ const NewMakeForm: React.FC<NewMakeFormProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-h4 mb-4 flex justify-between items-center">
-        {action === "create" ? "Add a new make" : "Edit make"}
-       
+        Edit Make
       </h3>
       <Form
         {...getFormProps(form)}
@@ -60,8 +44,14 @@ const NewMakeForm: React.FC<NewMakeFormProps> = ({
               ...getInputProps(fields.logo, {
                 type: "file",
               }),
+              defaultValue: "",
             }}
             errors={fields.logo.errors}
+            preview={
+              getInputProps(fields.logo, {
+                type: "file",
+              }).defaultValue
+            }
           />
           <Field
             labelProps={{ children: "Name of the make" }}
@@ -77,9 +67,6 @@ const NewMakeForm: React.FC<NewMakeFormProps> = ({
             type="submit"
             disabled={fields.logo.errors || fields.name.errors ? true : false}
           >
-            {status !== "idle" && (
-              <IconLoader2 className="animate-spin ease-linear" />
-            )}
             Save
           </Button>
         </div>
@@ -88,4 +75,4 @@ const NewMakeForm: React.FC<NewMakeFormProps> = ({
   );
 };
 
-export default NewMakeForm;
+export default CarMakeEditForm;

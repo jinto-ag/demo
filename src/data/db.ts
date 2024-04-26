@@ -11,6 +11,7 @@ import {
   engineCapacitiesSeed,
   bodyTypesSeed,
   cars,
+  carMakes,
 } from "./seed";
 
 export class DataRepository extends Dexie {
@@ -24,16 +25,17 @@ export class DataRepository extends Dexie {
     super("demo-db");
     this.version(1).stores({
       transmissionModels: "++id, name",
-      engineCapacities: "++id, capacity",
+      engineCapacities: "++id, capacity, unit",
       bodyTypes: "++id, name",
-      carMakes: "++id, name",
-      cars: "++id, make, modelName",
+      carMakes: "++id, name, logo",
+      cars: "++id, makeId, bodyTypeId, engineCapacityId, transmissionModelId, modelName, modelYear, isActive",
     });
 
     this.on("populate", () => {
       db.transmissionModels.bulkAdd(transmissionModelsSeed);
       db.engineCapacities.bulkAdd(engineCapacitiesSeed);
       db.bodyTypes.bulkAdd(bodyTypesSeed);
+      db.carMakes.bulkAdd(carMakes);
       db.cars.bulkAdd(cars);
     });
   }

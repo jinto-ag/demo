@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { db } from "./db";
 
 export const TransmissionModelSchema = z.object({
   id: z.number().optional(),
@@ -19,16 +20,40 @@ export const BodyTypeSchema = z.object({
 export const CarMakeSchema = z.object({
   id: z.number().optional(),
   name: z.string().min(3, "Make name must be 3 characters long"),
-  logo: z.instanceof(File),
+  logo: z.instanceof(File, { message: "Select a valid image" }),
 });
 
 export const CarSchema = z.object({
   id: z.number().optional(),
-  make: CarMakeSchema,
+  makeId: z.coerce.number().refine(async (id) => {
+    const make = await db.carMakes.get(id);
+    if (!make) {
+      throw new Error("Select a valid Car Make");
+    }
+    return make.id;
+  }),
   modelName: z.string(),
   modelYear: z.number(),
-  transmissionModel: TransmissionModelSchema,
-  engineCapacity: EngineCapacitySchema,
-  bodyType: BodyTypeSchema,
-  isActive: z.boolean(),
+  transmissionModelId: z.coerce.number().refine(async (id) => {
+    const result = await db.transmissionModels.get(id);
+    if (!result) {
+      throw new Error("Select a valid Transmission Model");
+    }
+    return result.id;
+  }),
+  engineCapacityId: z.coerce.number().refine(async (id) => {
+    const result = await db.engineCapacities.get(id);
+    if (!result) {
+      throw new Error("Select a valid Engine Capacity");
+    }
+    return result.id;
+  }),
+  bodyTypeId: z.coerce.number().refine(async (id) => {
+    const result = await db.bodyTypes.get(id);
+    if (!result) {
+      throw new Error("Select a valid Body Type");
+    }
+    return result.id;
+  }),
+  isActive: z.boolean().optional(),
 });
